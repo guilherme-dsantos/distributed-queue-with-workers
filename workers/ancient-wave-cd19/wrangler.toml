@@ -1,0 +1,6 @@
+name = "queue-worker"
+main = "src/index.ts"
+
+[[kv_namespaces]]
+binding = "QUEUE_STORAGE"
+id = "${QUEUE_STORAGE_ID}"
