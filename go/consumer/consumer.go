@@ -1,9 +1,11 @@
-// consumer/consumer.go
+// Package consumer consumer/consumer.go
 package consumer
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -40,7 +42,12 @@ func (c *Consumer) receive() (message.Message, error) {
 	if err != nil {
 		return message.Message{}, fmt.Errorf("receive message: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("error closing response body: %v", err)
+		}
+	}(resp.Body)
 
 	if resp.StatusCode == http.StatusNoContent {
 		return message.Message{}, fmt.Errorf("queue empty")

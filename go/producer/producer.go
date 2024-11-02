@@ -1,10 +1,12 @@
-// producer/producer.go
+// Package producer producer/producer.go
 package producer
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 
 	"github.com/guilherme-dsantos/distributed-queue-with-workers/go/message"
@@ -32,7 +34,12 @@ func (p *Producer) Send(payload interface{}) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("send message: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("error closing response body: %v", err)
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status: %d", resp.StatusCode)
